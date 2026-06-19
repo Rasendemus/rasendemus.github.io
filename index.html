@@ -115,7 +115,7 @@
     inset:0;
     width:140%;
     height:100%;
-    opacity:0.5;
+    opacity:0.32;
     z-index:0;
     animation: drift 22s ease-in-out infinite alternate;
   }
@@ -123,6 +123,11 @@
   .card-countdown .eyebrow{
     position:relative;
     z-index:1;
+  }
+
+  .card-countdown .countdown-sub,
+  .card-countdown .countdown-unit{
+    text-shadow: 0 1px 6px rgba(0,0,0,0.55);
   }
 
   @keyframes drift{
@@ -172,27 +177,71 @@
   .card-weather{
     grid-area: weather;
     background:var(--bg-elev-2);
-    overflow:auto;
-    gap:10px;
+    overflow:hidden;
+    gap:8px;
   }
 
   .weather-now{
     display:flex;
     align-items:center;
-    gap:14px;
+    gap:12px;
+  }
+
+  .weather-hours{
+    display:flex;
+    gap:10px;
+    margin-left:auto;
+  }
+
+  .weather-hour{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    font-size:0.74rem;
+    color:var(--text-dim);
+    background:rgba(34,211,238,0.06);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:6px 10px;
+  }
+
+  .weather-hour .h-time{
+    font-family:'JetBrains Mono', monospace;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    font-size:0.66rem;
+  }
+
+  .weather-hour .h-icon-temp{
+    display:flex;
+    align-items:center;
+    gap:5px;
+  }
+
+  .weather-hour svg{
+    width:18px;
+    height:18px;
+    color:var(--cyan);
+  }
+
+  .weather-hour .h-temp{
+    color:var(--text);
+    font-size:0.92rem;
+    font-weight:600;
   }
 
   .weather-icon{
     flex:none;
-    width:42px;
-    height:42px;
+    width:34px;
+    height:34px;
     color:var(--cyan);
   }
 
   .weather-temp{
     font-family:'Space Grotesk', sans-serif;
     font-weight:700;
-    font-size:2.3rem;
+    font-size:1.9rem;
     line-height:1;
     background:linear-gradient(100deg, var(--green), var(--cyan));
     -webkit-background-clip:text;
@@ -217,12 +266,20 @@
     color:var(--text-dim);
   }
 
+  .weather-sun{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem;
+    color:var(--text-dim);
+    margin:0;
+    padding-top:2px;
+  }
+
   .weather-days{
     display:flex;
     justify-content:space-between;
     gap:6px;
-    margin-top:auto;
-    padding-top:8px;
+    margin-top:10px;
+    padding-top:10px;
     border-top:1px solid var(--border);
   }
 
@@ -268,26 +325,36 @@
     margin:0;
     padding:0;
     flex:1;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    gap:10px;
-    overflow:auto;
+    display:grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(9, 1fr);
+    align-content:stretch;
+    overflow:hidden;
+    min-width:0;
   }
   .food-list li{
-    font-size:0.92rem;
-    padding:8px 0;
-    border-bottom:1px solid var(--border);
+    font-size:0.86rem;
     display:flex;
     align-items:center;
     gap:9px;
+    min-width:0;
+    border-bottom:1px solid var(--border);
   }
-  .food-list li:last-child{ border-bottom:none; }
+  .food-list li:last-child{
+    border-bottom:none;
+  }
+  .food-list li span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    min-width:0;
+    font-size:0.86rem;
+  }
   .food-list li::before{
     content:"";
-    width:6px; height:6px;
+    width:5px; height:5px;
     border-radius:50%;
-    background:var(--green);
+    background:linear-gradient(135deg, var(--green), var(--cyan));
     flex:none;
   }
 
@@ -433,6 +500,7 @@
       <span class="countdown-unit">days until Jyväskylä</span>
     </div>
     <p class="countdown-sub">Jul 8 → Jul 15 · Almost here.</p>
+    <p class="countdown-sub" id="jkl-clock" style="position:relative; z-index:1;">Jyväskylä time: —</p>
     <svg class="aurora-wave" viewBox="0 0 600 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="auroraGrad" x1="0" y1="0" x2="1" y2="0">
@@ -456,24 +524,25 @@
       </div>
       <div class="weather-desc">
         <span class="cond" id="weather-cond">—</span>
-        <span class="meta" id="weather-meta">feels like — · wind —</span>
       </div>
+      <div class="weather-hours" id="weather-hours"></div>
     </div>
+    <p class="weather-sun" id="weather-sun"></p>
     <div class="weather-days" id="weather-days"></div>
   </div>
 
   <div class="card card-foods">
     <p class="eyebrow">Foods to try</p>
     <ul class="food-list">
-      <li>Karjalanpiirakka</li>
-      <li>Fazer chocolate</li>
-      <li>Salmiakki</li>
-      <li>Mämmi</li>
-      <li>Lakritsi</li>
-      <li>rye bread</li>
-      <li>lihapiirakka</li>
-      <li>pinaattilettu</li>
-      <li>makaroonilaatikko</li>
+      <li><span>Karjalanpiirakka</span></li>
+      <li><span>Fazer chocolate</span></li>
+      <li><span>Salmiakki</span></li>
+      <li><span>Mämmi</span></li>
+      <li><span>Lakritsi</span></li>
+      <li><span>rye bread</span></li>
+      <li><span>lihapiirakka</span></li>
+      <li><span>pinaattilettu</span></li>
+      <li><span>makaroonilaatikko</span></li>
     </ul>
   </div>
 
@@ -522,6 +591,22 @@
   }
   updateCountdown();
 
+  // ---------- Live Jyväskylä clock ----------
+  function updateClock(){
+    const el = document.getElementById('jkl-clock');
+    const now = new Date();
+    const formatted = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/Helsinki',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).format(now);
+    el.textContent = 'Jyväskylä time: ' + formatted;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
   // ---------- Weather (Open-Meteo, no key required) ----------
   const WX_ICONS = {
     clear:  '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>',
@@ -568,8 +653,9 @@
       const url = 'https://api.open-meteo.com/v1/forecast'
         + '?latitude=62.2393&longitude=25.7475'
         + '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m'
-        + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
-        + '&timezone=Europe%2FHelsinki&forecast_days=5';
+        + '&hourly=temperature_2m,weather_code'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset'
+        + '&timezone=Europe%2FHelsinki&forecast_days=6';
 
       const res = await fetch(url);
       if (!res.ok) throw new Error('bad response');
@@ -578,9 +664,38 @@
       const cur = data.current;
       document.getElementById('weather-temp').textContent = Math.round(cur.temperature_2m) + '°';
       document.getElementById('weather-cond').textContent = wxLabel(cur.weather_code);
-      document.getElementById('weather-meta').textContent =
-        'feels like ' + Math.round(cur.apparent_temperature) + '° · wind ' + Math.round(cur.wind_speed_10m) + ' km/h';
       setIcon(document.getElementById('weather-now-icon'), cur.weather_code);
+
+      const sunrise = new Date(data.daily.sunrise[0]);
+      const sunset = new Date(data.daily.sunset[0]);
+      const fmt = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Helsinki' });
+      document.getElementById('weather-sun').textContent =
+        '☀ ' + fmt(sunrise) + ' rise · ' + fmt(sunset) + ' set';
+
+      // Hourly strip: next 6 hours starting from the current hour
+      const hoursEl = document.getElementById('weather-hours');
+      hoursEl.innerHTML = '';
+      const nowHour = new Date();
+      nowHour.setMinutes(0,0,0);
+      let startIdx = data.hourly.time.findIndex(t => new Date(t).getTime() >= nowHour.getTime());
+      if (startIdx === -1) startIdx = 0;
+
+      for (let i = startIdx; i < startIdx + 3 && i < data.hourly.time.length; i++) {
+        const t = new Date(data.hourly.time[i]);
+        const hourLabel = t.toLocaleTimeString('en-GB', { hour: '2-digit', timeZone: 'Europe/Helsinki' }).replace(':00','') + 'h';
+        const temp = Math.round(data.hourly.temperature_2m[i]);
+        const code = data.hourly.weather_code[i];
+
+        const wrap = document.createElement('div');
+        wrap.className = 'weather-hour';
+        wrap.innerHTML =
+          '<span class="h-time">' + hourLabel + '</span>' +
+          '<span class="h-icon-temp">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + WX_ICONS[wxCategory(code)] + '</svg>' +
+            '<span class="h-temp">' + temp + '°</span>' +
+          '</span>';
+        hoursEl.appendChild(wrap);
+      }
 
       statusEl.style.display = 'none';
       document.getElementById('weather-now').style.display = 'flex';
@@ -590,7 +705,7 @@
       const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
       data.daily.time.forEach((dateStr, i) => {
         if (i === 0) return; // skip today, already shown above
-        if (i > 4) return;
+        if (i > 5) return;
         const date = new Date(dateStr);
         const name = dayNames[date.getDay()];
         const hi = Math.round(data.daily.temperature_2m_max[i]);
