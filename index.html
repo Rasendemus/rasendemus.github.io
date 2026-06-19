@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jyväskylä Trip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --bg:#060a14;
+    --bg-elev:#0d1426;
+    --bg-elev-2:#0f1a2e;
+    --border: rgba(148,163,184,0.14);
+    --text:#e7ebf3;
+    --text-dim:#8a93a9;
+    --green:#34d399;
+    --cyan:#22d3ee;
+    --violet:#a78bfa;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{
+    margin:0;
+    height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', system-ui, sans-serif;
+  }
+
+  body{
+    overflow:hidden;
+    position:relative;
+  }
+
+  /* faint aurora glow + topographic texture behind everything */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:-10%;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 0%, rgba(52,211,153,0.10), transparent 60%),
+      radial-gradient(ellipse 50% 35% at 90% 10%, rgba(34,211,238,0.08), transparent 60%),
+      radial-gradient(ellipse 45% 30% at 50% 100%, rgba(167,139,250,0.07), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .dash{
+    position:relative;
+    z-index:1;
+    width:100vw;
+    height:100vh;
+    padding:18px;
+    display:grid;
+    gap:14px;
+    grid-template-columns: 0.75fr 1.5fr 1.05fr;
+    grid-template-rows: 0.85fr 1.4fr;
+    grid-template-areas:
+      "countdown weather playlist"
+      "foods     map      playlist";
+  }
+
+  .card{
+    background:var(--bg-elev);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    overflow:hidden;
+    min-height:0;
+  }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.65rem;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+
+  .eyebrow::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--green), var(--cyan));
+    flex:none;
+  }
+
+  /* ---------- COUNTDOWN (hero) ---------- */
+  .card-countdown{
+    grid-area: countdown;
+    background: linear-gradient(155deg, #0c1830 0%, #0a1322 55%, #0d1426 100%);
+    justify-content:flex-start;
+    position:relative;
+    border-color: rgba(52,211,153,0.18);
+  }
+
+  .aurora-wave{
+    position:absolute;
+    inset:0;
+    width:140%;
+    height:100%;
+    opacity:0.5;
+    z-index:0;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+
+  .card-countdown .eyebrow{
+    position:relative;
+    z-index:1;
+  }
+
+  @keyframes drift{
+    from{ transform:translateX(-6%); }
+    to{ transform:translateX(2%); }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .aurora-wave{ animation:none; }
+  }
+
+  .countdown-body{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+
+  .countdown-number{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:clamp(2.2rem, 4.8vw, 3.8rem);
+    line-height:1;
+    background:linear-gradient(100deg, var(--green), var(--cyan) 55%, var(--violet));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .countdown-unit{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.95rem;
+    color:var(--text-dim);
+  }
+
+  .countdown-sub{
+    position:relative;
+    z-index:1;
+    margin:2px 0 0 0;
+    color:var(--text-dim);
+    font-size:0.85rem;
+  }
+
+  /* ---------- WEATHER ---------- */
+  .card-weather{
+    grid-area: weather;
+    background:var(--bg-elev-2);
+    overflow:auto;
+    gap:10px;
+  }
+
+  .weather-now{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .weather-icon{
+    flex:none;
+    width:42px;
+    height:42px;
+    color:var(--cyan);
+  }
+
+  .weather-temp{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size:2.3rem;
+    line-height:1;
+    background:linear-gradient(100deg, var(--green), var(--cyan));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .weather-desc{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+
+  .weather-desc .cond{
+    font-size:0.85rem;
+    color:var(--text);
+  }
+
+  .weather-desc .meta{
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.72rem;
+    color:var(--text-dim);
+  }
+
+  .weather-days{
+    display:flex;
+    justify-content:space-between;
+    gap:6px;
+    margin-top:auto;
+    padding-top:8px;
+    border-top:1px solid var(--border);
+  }
+
+  .weather-day{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    font-size:0.68rem;
+    color:var(--text-dim);
+  }
+
+  .weather-day .d-name{
+    font-family:'JetBrains Mono', monospace;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+
+  .weather-day svg{
+    width:18px;
+    height:18px;
+    color:var(--cyan);
+  }
+
+  .weather-day .d-temps{
+    color:var(--text);
+    font-size:0.72rem;
+    white-space:nowrap;
+  }
+
+  .weather-day .d-temps .lo{ color:var(--text-dim); }
+
+  .weather-status{
+    color:var(--text-dim);
+    font-size:0.8rem;
+  }
+
+  /* ---------- FOODS ---------- */
+  .card-foods{ grid-area: foods; }
+  .food-list{
+    list-style:none;
+    margin:0;
+    padding:0;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:10px;
+    overflow:auto;
+  }
+  .food-list li{
+    font-size:0.92rem;
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    gap:9px;
+  }
+  .food-list li:last-child{ border-bottom:none; }
+  .food-list li::before{
+    content:"";
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--green);
+    flex:none;
+  }
+
+  /* ---------- MAP ---------- */
+  .card-map{
+    grid-area: map;
+    padding-bottom:14px;
+  }
+
+  .map-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .map-hint{
+    font-size:0.72rem;
+    color:var(--text-dim);
+  }
+
+  #pin-map{
+    flex:1;
+    min-height:0;
+    width:100%;
+    border-radius:8px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+
+  /* Leaflet theming to match the dashboard */
+  .leaflet-container{
+    background:#0a1322;
+    font-family:'Inter', system-ui, sans-serif;
+  }
+  .leaflet-popup-content-wrapper{
+    background:var(--bg-elev);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:8px;
+    box-shadow:none;
+  }
+  .leaflet-popup-tip{
+    background:var(--bg-elev);
+    border:1px solid var(--border);
+  }
+  .leaflet-popup-content{
+    margin:10px 12px;
+    font-size:0.82rem;
+    line-height:1.4;
+  }
+  .pin-popup-label{
+    display:block;
+    font-weight:600;
+    margin-bottom:6px;
+    font-family:'Space Grotesk', sans-serif;
+  }
+  .pin-popup-del{
+    background:none;
+    border:1px solid var(--border);
+    color:var(--text-dim);
+    font-family:'JetBrains Mono', monospace;
+    font-size:0.68rem;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .pin-popup-del:hover{ color:#f87171; border-color:#f87171; }
+  .leaflet-control-attribution{
+    background:rgba(6,10,20,0.7) !important;
+    color:var(--text-dim) !important;
+  }
+  .leaflet-control-attribution a{ color:var(--text-dim) !important; }
+  .leaflet-control-zoom a{
+    background:var(--bg-elev) !important;
+    color:var(--text) !important;
+    border-color:var(--border) !important;
+  }
+  .leaflet-control-zoom a:hover{ color:var(--cyan) !important; }
+
+  .pin-dot{
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:linear-gradient(135deg, var(--green), var(--cyan));
+    border:2px solid #0a1322;
+    box-shadow:0 0 0 3px rgba(34,211,238,0.25);
+  }
+
+  /* ---------- PLAYLIST ---------- */
+  .card-playlist{
+    grid-area: playlist;
+    padding:16px 16px 12px 16px;
+  }
+  .playlist-frame{
+    flex:1;
+    min-height:0;
+    width:100%;
+    border-radius:10px;
+    overflow:hidden;
+    border:1px solid rgba(52,211,153,0.18);
+    background:#121212;
+    box-shadow:0 0 0 1px rgba(34,211,238,0.06);
+  }
+  .card-playlist iframe{
+    display:block;
+    width:100%;
+    height:100%;
+    border:none;
+  }
+
+  /* ---------- Responsive: stack on small screens ---------- */
+  @media (max-width: 880px){
+    html, body{ overflow:auto; }
+    .dash{
+      height:auto;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      grid-template-areas:
+        "countdown"
+        "weather"
+        "foods"
+        "map"
+        "playlist";
+    }
+    .card{ min-height:140px; }
+    .card-map{ min-height:320px; }
+    .card-playlist .playlist-frame{ min-height:380px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="dash">
+
+  <div class="card card-countdown">
+    <p class="eyebrow">Countdown to Finland</p>
+    <div class="countdown-body">
+      <span class="countdown-number" id="countdown">—</span>
+      <span class="countdown-unit">days until Jyväskylä</span>
+    </div>
+    <p class="countdown-sub">Jul 8 → Jul 15 · Almost here.</p>
+    <svg class="aurora-wave" viewBox="0 0 600 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="auroraGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#34d399"/>
+          <stop offset="50%" stop-color="#22d3ee"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,150 C100,100 200,180 300,130 C400,80 500,160 600,110 L600,200 L0,200 Z" fill="url(#auroraGrad)" opacity="0.10"/>
+      <path d="M0,170 C120,120 220,190 320,150 C420,110 520,170 600,140" stroke="url(#auroraGrad)" stroke-width="1.5" fill="none" opacity="0.35"/>
+    </svg>
+  </div>
+
+  <div class="card card-weather">
+    <p class="eyebrow">Weather · Jyväskylä</p>
+    <p class="weather-status" id="weather-status">Loading forecast…</p>
+    <div class="weather-now" id="weather-now" style="display:none;">
+      <svg class="weather-icon" id="weather-now-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"></svg>
+      <div>
+        <span class="weather-temp" id="weather-temp">—°</span>
+      </div>
+      <div class="weather-desc">
+        <span class="cond" id="weather-cond">—</span>
+        <span class="meta" id="weather-meta">feels like — · wind —</span>
+      </div>
+    </div>
+    <div class="weather-days" id="weather-days"></div>
+  </div>
+
+  <div class="card card-foods">
+    <p class="eyebrow">Foods to try</p>
+    <ul class="food-list">
+      <li>Karjalanpiirakka</li>
+      <li>Fazer chocolate</li>
+      <li>Salmiakki</li>
+      <li>Mämmi</li>
+    </ul>
+  </div>
+
+  <div class="card card-map">
+    <div class="map-header">
+      <p class="eyebrow">Spots</p>
+      <span class="map-hint">click to drop a pin · click a pin to remove</span>
+    </div>
+    <div id="pin-map"></div>
+  </div>
+
+  <div class="card card-playlist">
+    <p class="eyebrow">Playlist</p>
+    <div class="playlist-frame">
+      <iframe
+          src="https://open.spotify.com/embed/playlist/0oxgwY57CPWPMooMvXDigd?utm_source=generator&theme=0"
+          frameborder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+      </iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function updateCountdown() {
+    const arrival = new Date("July 8, 2026");
+    const today = new Date();
+    arrival.setHours(0,0,0,0);
+    today.setHours(0,0,0,0);
+
+    const diff = arrival - today;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const el = document.getElementById("countdown");
+    const sub = document.querySelector(".countdown-sub");
+
+    if (days > 0) {
+      el.textContent = days;
+    } else if (days === 0) {
+      el.textContent = "0";
+      sub.textContent = "Arrival day — welcome to Finland.";
+    } else {
+      el.textContent = "✓";
+      sub.textContent = "He's here!";
+    }
+  }
+  updateCountdown();
+
+  // ---------- Weather (Open-Meteo, no key required) ----------
+  const WX_ICONS = {
+    clear:  '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>',
+    cloud:  '<path d="M7 18a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 18H7Z"/>',
+    fog:    '<path d="M5 8.5h11M3 12h14M5 15.5h11" /><circle cx="17.5" cy="9" r="2.6"/>',
+    rain:   '<path d="M7 14.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14.5H7Z"/><path d="M8 18.5l-1 2.2M12.5 18.5l-1 2.2M17 18.5l-1 2.2"/>',
+    snow:   '<path d="M7 14a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14H7Z"/><path d="M9 18.5v3M7.6 19.2l2.8 1.6M10.4 19.2l-2.8 1.6M15 18.5v3M13.6 19.2l2.8 1.6M16.4 19.2l-2.8 1.6"/>',
+    storm:  '<path d="M7 13.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 13.5H7Z"/><path d="M12.5 14.5l-2.5 4h2.5l-1.5 4 4.5-5.5h-2.5l2-2.5h-2.5z" fill="currentColor" stroke="none"/>'
+  };
+
+  function wxCategory(code){
+    if (code === 0 || code === 1) return 'clear';
+    if (code === 2 || code === 3) return 'cloud';
+    if (code === 45 || code === 48) return 'fog';
+    if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return 'rain';
+    if ([71,73,75,77,85,86].includes(code)) return 'snow';
+    if ([95,96,99].includes(code)) return 'storm';
+    return 'cloud';
+  }
+
+  function wxLabel(code){
+    const labels = {
+      0:'Clear sky', 1:'Mostly clear', 2:'Partly cloudy', 3:'Overcast',
+      45:'Fog', 48:'Rime fog',
+      51:'Light drizzle', 53:'Drizzle', 55:'Dense drizzle',
+      56:'Freezing drizzle', 57:'Freezing drizzle',
+      61:'Light rain', 63:'Rain', 65:'Heavy rain',
+      66:'Freezing rain', 67:'Freezing rain',
+      71:'Light snow', 73:'Snow', 75:'Heavy snow', 77:'Snow grains',
+      80:'Rain showers', 81:'Rain showers', 82:'Violent showers',
+      85:'Snow showers', 86:'Snow showers',
+      95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Thunderstorm + hail'
+    };
+    return labels[code] || 'Unsettled';
+  }
+
+  function setIcon(svgEl, code){
+    svgEl.innerHTML = WX_ICONS[wxCategory(code)];
+  }
+
+  async function loadWeather(){
+    const statusEl = document.getElementById('weather-status');
+    try{
+      const url = 'https://api.open-meteo.com/v1/forecast'
+        + '?latitude=62.2393&longitude=25.7475'
+        + '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m'
+        + '&daily=weather_code,temperature_2m_max,temperature_2m_min'
+        + '&timezone=Europe%2FHelsinki&forecast_days=5';
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('bad response');
+      const data = await res.json();
+
+      const cur = data.current;
+      document.getElementById('weather-temp').textContent = Math.round(cur.temperature_2m) + '°';
+      document.getElementById('weather-cond').textContent = wxLabel(cur.weather_code);
+      document.getElementById('weather-meta').textContent =
+        'feels like ' + Math.round(cur.apparent_temperature) + '° · wind ' + Math.round(cur.wind_speed_10m) + ' km/h';
+      setIcon(document.getElementById('weather-now-icon'), cur.weather_code);
+
+      statusEl.style.display = 'none';
+      document.getElementById('weather-now').style.display = 'flex';
+
+      const daysEl = document.getElementById('weather-days');
+      daysEl.innerHTML = '';
+      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      data.daily.time.forEach((dateStr, i) => {
+        if (i === 0) return; // skip today, already shown above
+        if (i > 4) return;
+        const date = new Date(dateStr);
+        const name = dayNames[date.getDay()];
+        const hi = Math.round(data.daily.temperature_2m_max[i]);
+        const lo = Math.round(data.daily.temperature_2m_min[i]);
+        const code = data.daily.weather_code[i];
+
+        const wrap = document.createElement('div');
+        wrap.className = 'weather-day';
+        wrap.innerHTML =
+          '<span class="d-name">' + name + '</span>' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + WX_ICONS[wxCategory(code)] + '</svg>' +
+          '<span class="d-temps">' + hi + '° <span class="lo">' + lo + '°</span></span>';
+        daysEl.appendChild(wrap);
+      });
+
+    }catch(err){
+      statusEl.textContent = "Couldn't load forecast.";
+    }
+  }
+
+  loadWeather();
+
+  // ---------- Map with custom pins (Leaflet + OpenStreetMap, no key required) ----------
+  const PIN_STORAGE_KEY = 'tripDashboard.pins.v1';
+  const DEFAULT_PINS = [
+    { id: 'd1', lat: 62.2412, lng: 25.7480, label: 'Grocery store' },
+    { id: 'd2', lat: 62.2350, lng: 25.7390, label: 'Walking spot' },
+    { id: 'd3', lat: 62.2440, lng: 25.7510, label: 'Bus stop' }
+  ];
+
+  function loadPins(){
+    const raw = localStorage.getItem(PIN_STORAGE_KEY);
+    if (raw === null) return DEFAULT_PINS.slice();
+    try{
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : DEFAULT_PINS.slice();
+    }catch(e){
+      return DEFAULT_PINS.slice();
+    }
+  }
+
+  function savePins(pins){
+    localStorage.setItem(PIN_STORAGE_KEY, JSON.stringify(pins));
+  }
+
+  let pins = loadPins();
+  const markersById = {};
+
+  const map = L.map('pin-map', { zoomControl: true }).setView([62.2393, 25.7475], 13);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
+    maxZoom: 19
+  }).addTo(map);
+
+  function fitToPins(){
+    if (pins.length === 0) return;
+    const bounds = L.latLngBounds(pins.map(p => [p.lat, p.lng]));
+    map.fitBounds(bounds, { padding: [36, 36], maxZoom: 15 });
+  }
+
+  const pinIcon = L.divIcon({
+    className: '',
+    html: '<div class="pin-dot"></div>',
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+    popupAnchor: [0, -8]
+  });
+
+  function popupHTML(pin){
+    return '<span class="pin-popup-label">' + escapeHTML(pin.label) + '</span>' +
+      '<button class="pin-popup-del" onclick="window.removePin(\'' + pin.id + '\')">Remove pin</button>';
+  }
+
+  function escapeHTML(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function addMarker(pin){
+    const marker = L.marker([pin.lat, pin.lng], { icon: pinIcon, draggable: true }).addTo(map);
+    marker.bindPopup(popupHTML(pin));
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      pin.lat = pos.lat;
+      pin.lng = pos.lng;
+      savePins(pins);
+    });
+    markersById[pin.id] = marker;
+  }
+
+  pins.forEach(addMarker);
+
+  window.removePin = function(id){
+    const marker = markersById[id];
+    if (marker) map.removeLayer(marker);
+    delete markersById[id];
+    pins = pins.filter(p => p.id !== id);
+    savePins(pins);
+  };
+
+  map.on('click', (e) => {
+    const label = window.prompt('Label this pin:', '');
+    if (label === null || label.trim() === '') return;
+    const pin = {
+      id: 'p' + Date.now() + Math.floor(Math.random() * 1000),
+      lat: e.latlng.lat,
+      lng: e.latlng.lng,
+      label: label.trim()
+    };
+    pins.push(pin);
+    savePins(pins);
+    addMarker(pin);
+    markersById[pin.id].openPopup();
+  });
+
+  // Leaflet sizes itself off the container's dimensions at init time;
+  // recalculate once layout/fonts have settled, then frame the pins.
+  setTimeout(() => { map.invalidateSize(); fitToPins(); }, 200);
+  window.addEventListener('resize', () => { map.invalidateSize(); });
+</script>
+
+</body>
+</html>
