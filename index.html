@@ -531,7 +531,10 @@
 
     function fmt(n){
       if(!isFinite(n))return'';
-      return n.toLocaleString('en-GB',{maximumFractionDigits:2});
+      // No thousand separators: <input type="number"> silently rejects
+      // values containing commas (e.g. "1,234.56"), which made amounts
+      // over 1000 vanish instead of displaying.
+      return (Math.round(n*100)/100).toString();
     }
 
     function rateFromTo(){
