@@ -53,25 +53,26 @@
     z-index:1;
     width:100vw;
     height:100vh;
-    padding:clamp(18px, 1.4vw, 32px);
+    padding:clamp(12px, 1vw, 28px);
     display:grid;
-    gap:clamp(14px, 1vw, 22px);
+    gap:clamp(10px, 0.8vw, 18px);
     grid-template-columns: 0.75fr 1.5fr 1.05fr;
-    grid-template-rows: 1.15fr 1.4fr 0.45fr;
+    grid-template-rows: minmax(210px, 24vh) minmax(0, 1fr) clamp(90px, 9vh, 118px) clamp(64px, 6.5vh, 86px);
     grid-template-areas:
       "countdown weather  playlist"
       "foods     map      playlist"
-      "travel    travel   playlist";
+      "travel    travel   playlist"
+      "currency  currency playlist";
   }
 
   .card{
     background:var(--bg-elev);
     border:1px solid var(--border);
     border-radius:clamp(10px, 0.6vw, 14px);
-    padding:clamp(16px, 1.2vw, 26px) clamp(18px, 1.3vw, 28px);
+    padding:clamp(12px, 1vw, 22px) clamp(14px, 1.1vw, 24px);
     display:flex;
     flex-direction:column;
-    gap:clamp(8px, 0.6vw, 14px);
+    gap:clamp(6px, 0.5vw, 12px);
     overflow:hidden;
     min-height:0;
   }
@@ -159,10 +160,10 @@
   .weather-desc .cond{ font-size:clamp(0.85rem, 0.35vw + 0.7rem, 1.2rem); color:var(--text); }
   .weather-sun{ font-family:'JetBrains Mono',monospace; font-size:clamp(0.68rem, 0.25vw + 0.55rem, 0.95rem); color:var(--text-dim); margin:0; padding-top:2px; }
   .weather-days{
-    display:flex; justify-content:space-between; gap:6px;
-    margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; gap:5px;
+    margin-top:4px; padding-top:4px; border-top:1px solid var(--border);
   }
-  .weather-day{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:clamp(0.68rem, 0.25vw + 0.55rem, 0.95rem); color:var(--text-dim); }
+  .weather-day{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:clamp(0.64rem, 0.22vw + 0.52rem, 0.92rem); color:var(--text-dim); }
   .weather-day .d-name{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; }
   .weather-day svg{ width:clamp(18px, 1.1vw, 26px); height:clamp(18px, 1.1vw, 26px); color:var(--cyan); }
   .weather-day .d-temps{ color:var(--text); font-size:1.06em; white-space:nowrap; }
@@ -205,7 +206,7 @@
   .card-playlist iframe{ display:block; width:100%; height:100%; border:none; }
 
   /* TRAVEL — single horizontal row of 4 legs */
-  .card-travel{ grid-area:travel; padding:10px 16px; gap:0; }
+  .card-travel{ grid-area:travel; padding:8px clamp(10px,1vw,16px); gap:0; }
   .travel-legs{
     flex:1; min-height:0;
     display:grid;
@@ -213,28 +214,56 @@
     align-items:center;
   }
   .travel-divider{ background:var(--border); align-self:stretch; margin:4px 0; }
-  .travel-segment{ display:flex; align-items:center; gap:clamp(9px, 0.6vw, 14px); padding:0 clamp(14px, 1vw, 22px); min-width:0; }
-  .seg-icon{ width:clamp(24px, 1.7vw, 36px); height:clamp(24px, 1.7vw, 36px); border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-size:clamp(0.8rem, 0.6vw, 1.15rem); }
+  .travel-segment{ display:flex; align-items:center; gap:clamp(7px, 0.5vw, 12px); padding:0 clamp(8px, 0.7vw, 16px); min-width:0; }
+  .seg-icon{ width:clamp(22px, 1.5vw, 34px); height:clamp(22px, 1.5vw, 34px); border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-size:clamp(0.78rem, 0.55vw, 1.1rem); }
   .seg-icon.plane{ background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.3); }
   .seg-icon.bus{ background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.25); }
   .seg-icon.train{ background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.25); }
   .seg-body{ display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
-  .seg-route{ font-size:clamp(0.8rem, 0.35vw + 0.65rem, 1.15rem); font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .seg-route{ font-size:clamp(0.72rem, 0.28vw + 0.58rem, 1.05rem); font-weight:500; color:var(--text); white-space:normal; line-height:1.2; overflow-wrap:break-word; }
   .seg-times{ font-family:'JetBrains Mono',monospace; font-size:clamp(0.66rem, 0.25vw + 0.54rem, 0.92rem); color:var(--text-dim); display:flex; align-items:center; gap:4px; }
   .seg-times .t-depart{ color:var(--text); }
   .seg-times .t-arrow{ opacity:0.4; }
   .seg-times .t-arrive{ color:var(--text-dim); }
   .seg-times .t-date{ font-size:0.88em; background:rgba(148,163,184,0.08); border:1px solid var(--border); border-radius:4px; padding:1px 5px; color:var(--text-dim); white-space:nowrap; }
 
+  /* CURRENCY */
+  .card-currency{ grid-area:currency; padding:8px clamp(14px,1.2vw,22px); gap:clamp(8px,0.8vw,16px); flex-direction:row; align-items:center; flex-wrap:nowrap; }
+  .card-currency .eyebrow{ width:auto; flex:none; white-space:nowrap; }
+  .fx-row{ flex:1; display:flex; align-items:center; gap:clamp(8px,0.6vw,14px); min-width:0; }
+  .fx-field{ flex:1; min-width:0; display:flex; flex-direction:row; align-items:center; gap:6px; }
+  .fx-field label{ font-family:'JetBrains Mono',monospace; font-size:clamp(0.62rem,0.22vw+0.52rem,0.8rem); color:var(--text-dim); letter-spacing:0.06em; text-transform:uppercase; flex:none; }
+  .fx-input-wrap{ flex:1; min-width:0; display:flex; align-items:center; gap:6px; background:rgba(34,211,238,0.06); border:1px solid var(--border); border-radius:7px; padding:5px 9px; }
+  .fx-input-wrap input{
+    width:100%; background:none; border:none; outline:none; color:var(--text);
+    font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:clamp(0.92rem,0.5vw+0.7rem,1.25rem);
+  }
+  .fx-input-wrap input::-webkit-outer-spin-button,
+  .fx-input-wrap input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .fx-swap{
+    flex:none; width:clamp(26px,1.5vw,32px); height:clamp(26px,1.5vw,32px); border-radius:50%;
+    background:linear-gradient(135deg, var(--green), var(--cyan)); border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:#06121c; font-size:0.9rem;
+    transition:transform 0.2s ease;
+  }
+  .fx-swap:hover{ transform:rotate(180deg); }
+  .fx-rate-line{ flex:none; font-family:'JetBrains Mono',monospace; font-size:clamp(0.62rem,0.22vw+0.5rem,0.85rem); color:var(--text-dim); white-space:nowrap; }
+  .fx-rate-line span{ color:var(--text); }
+
   @media(max-width:880px){
     html,body{ overflow:auto; }
     .dash{ height:auto; grid-template-columns:1fr; grid-template-rows:auto;
-      grid-template-areas:"countdown" "weather" "foods" "map" "travel" "playlist"; }
+      grid-template-areas:"countdown" "weather" "foods" "map" "travel" "currency" "playlist"; }
     .card{ min-height:140px; }
     .card-map{ min-height:320px; }
     .card-playlist .playlist-frame{ min-height:380px; }
     .travel-legs{ grid-template-columns:1fr; }
     .travel-divider{ height:1px; width:auto; }
+    .card-currency{ flex-direction:column; align-items:stretch; }
+    .fx-row{ flex-direction:column; align-items:stretch; }
+    .fx-field{ flex-direction:column; align-items:stretch; gap:3px; }
+    .fx-swap{ align-self:center; transform:rotate(90deg); }
+    .fx-swap:hover{ transform:rotate(270deg); }
   }
 </style>
 </head>
@@ -363,6 +392,26 @@
     </div>
   </div>
 
+  <div class="card card-currency">
+    <p class="eyebrow">Currency · NOK ⇄ EUR</p>
+    <div class="fx-row">
+      <div class="fx-field">
+        <label id="fx-label-from">NOK</label>
+        <div class="fx-input-wrap">
+          <input type="number" id="fx-input-from" value="100" min="0" step="any" inputmode="decimal">
+        </div>
+      </div>
+      <button class="fx-swap" id="fx-swap-btn" title="Swap currencies" aria-label="Swap currencies">⇄</button>
+      <div class="fx-field">
+        <label id="fx-label-to">EUR</label>
+        <div class="fx-input-wrap">
+          <input type="number" id="fx-input-to" value="0" min="0" step="any" inputmode="decimal">
+        </div>
+      </div>
+    </div>
+    <span class="fx-rate-line" id="fx-rate-line">Loading rate…</span>
+  </div>
+
   <div class="card card-playlist">
     <p class="eyebrow">Playlist</p>
     <div class="playlist-frame">
@@ -467,6 +516,87 @@
     }catch(e){statusEl.textContent="Couldn't load forecast.";}
   }
   loadWeather();
+
+  /* CURRENCY CONVERTER — NOK <-> EUR */
+  (function(){
+    const fromInput=document.getElementById('fx-input-from');
+    const toInput=document.getElementById('fx-input-to');
+    const labelFrom=document.getElementById('fx-label-from');
+    const labelTo=document.getElementById('fx-label-to');
+    const swapBtn=document.getElementById('fx-swap-btn');
+    const rateLine=document.getElementById('fx-rate-line');
+
+    let base='NOK', target='EUR'; // base = "from" currency
+    let nokPerEur=null; // 1 EUR = nokPerEur NOK
+
+    function fmt(n){
+      if(!isFinite(n))return'';
+      return n.toLocaleString('en-GB',{maximumFractionDigits:2});
+    }
+
+    function rateFromTo(){
+      // returns multiplier: amount_in_base * rate = amount_in_target
+      if(nokPerEur===null)return null;
+      if(base==='NOK'&&target==='EUR')return 1/nokPerEur;
+      if(base==='EUR'&&target==='NOK')return nokPerEur;
+      return 1;
+    }
+
+    function recalcFromBase(){
+      const r=rateFromTo();
+      const v=parseFloat(fromInput.value);
+      if(r===null||isNaN(v)){toInput.value='';return;}
+      toInput.value=fmt(v*r);
+    }
+
+    function recalcFromTarget(){
+      const r=rateFromTo();
+      const v=parseFloat(toInput.value);
+      if(r===null||isNaN(v)||r===0){fromInput.value='';return;}
+      fromInput.value=fmt(v/r);
+    }
+
+    function updateRateLine(){
+      if(nokPerEur===null){rateLine.textContent="Couldn't load rate.";return;}
+      rateLine.innerHTML='1 € = <span>'+fmt(nokPerEur)+' NOK</span>';
+    }
+
+    function applyLabels(){
+      labelFrom.textContent=base;
+      labelTo.textContent=target;
+    }
+
+    swapBtn.addEventListener('click',()=>{
+      [base,target]=[target,base];
+      applyLabels();
+      recalcFromBase();
+    });
+
+    fromInput.addEventListener('input',recalcFromBase);
+    toInput.addEventListener('input',recalcFromTarget);
+
+    async function loadRate(){
+      try{
+        const res=await fetch('https://api.frankfurter.dev/v1/latest?base=EUR&symbols=NOK');
+        if(!res.ok)throw new Error('bad');
+        const data=await res.json();
+        nokPerEur=data.rates.NOK;
+      }catch(e){
+        try{
+          const res2=await fetch('https://api.exchangerate-api.com/v4/latest/EUR');
+          if(!res2.ok)throw new Error('bad');
+          const data2=await res2.json();
+          nokPerEur=data2.rates.NOK;
+        }catch(e2){ nokPerEur=null; }
+      }
+      updateRateLine();
+      applyLabels();
+      recalcFromBase();
+    }
+
+    applyLabels();
+    loadRate();
+  })();
 
   const firebaseConfig={apiKey:"AIzaSyA0xdtrCJkOHOdI37w5lurWyNmBnFtrNyc",authDomain:"rasendemus-e5b73.firebaseapp.com",databaseURL:"https://rasendemus-e5b73-default-rtdb.europe-west1.firebasedatabase.app",projectId:"rasendemus-e5b73",storageBucket:"rasendemus-e5b73.firebasestorage.app",messagingSenderId:"492937064643",appId:"1:492937064643:web:432fdbd6a7f2cdde2b3276"};
   firebase.initializeApp(firebaseConfig);
