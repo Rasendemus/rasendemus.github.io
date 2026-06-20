@@ -53,9 +53,9 @@
     z-index:1;
     width:100vw;
     height:100vh;
-    padding:18px;
+    padding:clamp(18px, 1.4vw, 32px);
     display:grid;
-    gap:14px;
+    gap:clamp(14px, 1vw, 22px);
     grid-template-columns: 0.75fr 1.5fr 1.05fr;
     grid-template-rows: 1.15fr 1.4fr 0.45fr;
     grid-template-areas:
@@ -67,18 +67,18 @@
   .card{
     background:var(--bg-elev);
     border:1px solid var(--border);
-    border-radius:10px;
-    padding:16px 18px;
+    border-radius:clamp(10px, 0.6vw, 14px);
+    padding:clamp(16px, 1.2vw, 26px) clamp(18px, 1.3vw, 28px);
     display:flex;
     flex-direction:column;
-    gap:8px;
+    gap:clamp(8px, 0.6vw, 14px);
     overflow:hidden;
     min-height:0;
   }
 
   .eyebrow{
     font-family:'JetBrains Mono', monospace;
-    font-size:0.65rem;
+    font-size:clamp(0.65rem, 0.45vw + 0.5rem, 0.92rem);
     letter-spacing:0.12em;
     text-transform:uppercase;
     color:var(--text-dim);
@@ -126,48 +126,48 @@
   .countdown-number{
     font-family:'Space Grotesk', sans-serif;
     font-weight:700;
-    font-size:clamp(2.2rem, 4.8vw, 3.8rem);
+    font-size:clamp(2.2rem, 3.6vw, 5.2rem);
     line-height:1;
     background:linear-gradient(100deg, var(--green), var(--cyan) 55%, var(--violet));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
 
-  .countdown-unit{ font-family:'JetBrains Mono', monospace; font-size:0.95rem; color:var(--text-dim); }
-  .countdown-sub{ position:relative; z-index:1; margin:2px 0 0 0; color:var(--text-dim); font-size:0.85rem; }
+  .countdown-unit{ font-family:'JetBrains Mono', monospace; font-size:clamp(0.95rem, 0.5vw + 0.75rem, 1.4rem); color:var(--text-dim); }
+  .countdown-sub{ position:relative; z-index:1; margin:2px 0 0 0; color:var(--text-dim); font-size:clamp(0.85rem, 0.35vw + 0.7rem, 1.15rem); }
 
   /* WEATHER */
-  .card-weather{ grid-area:weather; background:var(--bg-elev-2); overflow:hidden; gap:6px; }
-  .weather-now{ display:flex; align-items:center; gap:12px; }
-  .weather-hours{ display:flex; gap:10px; margin-left:auto; }
+  .card-weather{ grid-area:weather; background:var(--bg-elev-2); overflow:hidden; gap:clamp(6px, 0.5vw, 12px); }
+  .weather-now{ display:flex; align-items:center; gap:clamp(12px, 0.9vw, 18px); }
+  .weather-hours{ display:flex; gap:clamp(10px, 0.8vw, 16px); margin-left:auto; }
   .weather-hour{
     display:flex; flex-direction:column; align-items:center; gap:5px;
-    font-size:0.74rem; color:var(--text-dim);
+    font-size:clamp(0.74rem, 0.3vw + 0.6rem, 1rem); color:var(--text-dim);
     background:rgba(34,211,238,0.06); border:1px solid var(--border);
-    border-radius:8px; padding:6px 10px;
+    border-radius:8px; padding:clamp(6px, 0.5vw, 10px) clamp(10px, 0.7vw, 16px);
   }
-  .weather-hour .h-time{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; font-size:0.66rem; }
+  .weather-hour .h-time{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; font-size:0.86em; }
   .weather-hour .h-icon-temp{ display:flex; align-items:center; gap:5px; }
-  .weather-hour svg{ width:18px; height:18px; color:var(--cyan); }
-  .weather-hour .h-temp{ color:var(--text); font-size:0.92rem; font-weight:600; }
-  .weather-icon{ flex:none; width:34px; height:34px; color:var(--cyan); }
+  .weather-hour svg{ width:clamp(18px, 1.1vw, 26px); height:clamp(18px, 1.1vw, 26px); color:var(--cyan); }
+  .weather-hour .h-temp{ color:var(--text); font-size:1.18em; font-weight:600; }
+  .weather-icon{ flex:none; width:clamp(34px, 2.2vw, 50px); height:clamp(34px, 2.2vw, 50px); color:var(--cyan); }
   .weather-temp{
-    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.9rem; line-height:1;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:clamp(1.9rem, 1.4vw + 1.3rem, 3rem); line-height:1;
     background:linear-gradient(100deg, var(--green), var(--cyan));
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
   .weather-desc{ display:flex; flex-direction:column; gap:2px; }
-  .weather-desc .cond{ font-size:0.85rem; color:var(--text); }
-  .weather-sun{ font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text-dim); margin:0; padding-top:2px; }
+  .weather-desc .cond{ font-size:clamp(0.85rem, 0.35vw + 0.7rem, 1.2rem); color:var(--text); }
+  .weather-sun{ font-family:'JetBrains Mono',monospace; font-size:clamp(0.68rem, 0.25vw + 0.55rem, 0.95rem); color:var(--text-dim); margin:0; padding-top:2px; }
   .weather-days{
     display:flex; justify-content:space-between; gap:6px;
     margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
   }
-  .weather-day{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.68rem; color:var(--text-dim); }
+  .weather-day{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:clamp(0.68rem, 0.25vw + 0.55rem, 0.95rem); color:var(--text-dim); }
   .weather-day .d-name{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; }
-  .weather-day svg{ width:18px; height:18px; color:var(--cyan); }
-  .weather-day .d-temps{ color:var(--text); font-size:0.72rem; white-space:nowrap; }
+  .weather-day svg{ width:clamp(18px, 1.1vw, 26px); height:clamp(18px, 1.1vw, 26px); color:var(--cyan); }
+  .weather-day .d-temps{ color:var(--text); font-size:1.06em; white-space:nowrap; }
   .weather-day .d-temps .lo{ color:var(--text-dim); }
-  .weather-status{ color:var(--text-dim); font-size:0.8rem; }
+  .weather-status{ color:var(--text-dim); font-size:clamp(0.8rem, 0.3vw + 0.65rem, 1.1rem); }
 
   /* FOODS */
   .card-foods{ grid-area:foods; }
@@ -176,20 +176,20 @@
     display:grid; grid-template-columns:1fr; grid-template-rows:repeat(9,1fr);
     align-content:stretch; overflow:hidden; min-width:0;
   }
-  .food-list li{ font-size:0.86rem; display:flex; align-items:center; gap:9px; min-width:0; border-bottom:1px solid var(--border); }
+  .food-list li{ font-size:clamp(0.86rem, 0.35vw + 0.7rem, 1.2rem); display:flex; align-items:center; gap:9px; min-width:0; border-bottom:1px solid var(--border); }
   .food-list li:last-child{ border-bottom:none; }
-  .food-list li span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; font-size:0.86rem; }
+  .food-list li span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; font-size:1em; }
   .food-list li::before{ content:""; width:5px; height:5px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--cyan)); flex:none; }
 
   /* MAP */
   .card-map{ grid-area:map; padding-bottom:14px; }
   .map-header{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-  .map-hint{ font-size:0.72rem; color:var(--text-dim); }
+  .map-hint{ font-size:clamp(0.72rem, 0.3vw + 0.58rem, 1rem); color:var(--text-dim); }
   #pin-map{ flex:1; min-height:0; width:100%; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
   .leaflet-container{ background:#0a1322; font-family:'Inter',system-ui,sans-serif; }
   .leaflet-popup-content-wrapper{ background:var(--bg-elev); color:var(--text); border:1px solid var(--border); border-radius:8px; box-shadow:none; }
   .leaflet-popup-tip{ background:var(--bg-elev); border:1px solid var(--border); }
-  .leaflet-popup-content{ margin:10px 12px; font-size:0.82rem; line-height:1.4; }
+  .leaflet-popup-content{ margin:10px 12px; font-size:clamp(0.82rem, 0.3vw + 0.68rem, 1.1rem); line-height:1.4; }
   .pin-popup-label{ display:block; font-weight:600; margin-bottom:6px; font-family:'Space Grotesk',sans-serif; }
   .pin-popup-del{ background:none; border:1px solid var(--border); color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.05em; text-transform:uppercase; padding:3px 8px; border-radius:5px; cursor:pointer; }
   .pin-popup-del:hover{ color:#f87171; border-color:#f87171; }
@@ -213,18 +213,18 @@
     align-items:center;
   }
   .travel-divider{ background:var(--border); align-self:stretch; margin:4px 0; }
-  .travel-segment{ display:flex; align-items:center; gap:9px; padding:0 14px; min-width:0; }
-  .seg-icon{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-size:0.8rem; }
+  .travel-segment{ display:flex; align-items:center; gap:clamp(9px, 0.6vw, 14px); padding:0 clamp(14px, 1vw, 22px); min-width:0; }
+  .seg-icon{ width:clamp(24px, 1.7vw, 36px); height:clamp(24px, 1.7vw, 36px); border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-size:clamp(0.8rem, 0.6vw, 1.15rem); }
   .seg-icon.plane{ background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.3); }
   .seg-icon.bus{ background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.25); }
   .seg-icon.train{ background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.25); }
   .seg-body{ display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
-  .seg-route{ font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .seg-times{ font-family:'JetBrains Mono',monospace; font-size:0.66rem; color:var(--text-dim); display:flex; align-items:center; gap:4px; }
+  .seg-route{ font-size:clamp(0.8rem, 0.35vw + 0.65rem, 1.15rem); font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .seg-times{ font-family:'JetBrains Mono',monospace; font-size:clamp(0.66rem, 0.25vw + 0.54rem, 0.92rem); color:var(--text-dim); display:flex; align-items:center; gap:4px; }
   .seg-times .t-depart{ color:var(--text); }
   .seg-times .t-arrow{ opacity:0.4; }
   .seg-times .t-arrive{ color:var(--text-dim); }
-  .seg-times .t-date{ font-size:0.58rem; background:rgba(148,163,184,0.08); border:1px solid var(--border); border-radius:4px; padding:1px 5px; color:var(--text-dim); white-space:nowrap; }
+  .seg-times .t-date{ font-size:0.88em; background:rgba(148,163,184,0.08); border:1px solid var(--border); border-radius:4px; padding:1px 5px; color:var(--text-dim); white-space:nowrap; }
 
   @media(max-width:880px){
     html,body{ overflow:auto; }
