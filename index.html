@@ -9,7 +9,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<!-- Firebase (compat build works with plain <script> tags, no bundler needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
@@ -35,12 +34,8 @@
     font-family:'Inter', system-ui, sans-serif;
   }
 
-  body{
-    overflow:hidden;
-    position:relative;
-  }
+  body{ overflow:hidden; position:relative; }
 
-  /* faint aurora glow + topographic texture behind everything */
   body::before{
     content:"";
     position:fixed;
@@ -62,10 +57,11 @@
     display:grid;
     gap:14px;
     grid-template-columns: 0.75fr 1.5fr 1.05fr;
-    grid-template-rows: 0.85fr 1.4fr;
+    grid-template-rows: 1.15fr 1.4fr 0.45fr;
     grid-template-areas:
-      "countdown weather playlist"
-      "foods     map      playlist";
+      "countdown weather  playlist"
+      "foods     map      playlist"
+      "travel    travel   playlist";
   }
 
   .card{
@@ -94,14 +90,13 @@
 
   .eyebrow::before{
     content:"";
-    width:6px;
-    height:6px;
+    width:6px; height:6px;
     border-radius:50%;
     background:linear-gradient(135deg, var(--green), var(--cyan));
     flex:none;
   }
 
-  /* ---------- COUNTDOWN (hero) ---------- */
+  /* COUNTDOWN */
   .card-countdown{
     grid-area: countdown;
     background: linear-gradient(155deg, #0c1830 0%, #0a1322 55%, #0d1426 100%);
@@ -111,41 +106,21 @@
   }
 
   .aurora-wave{
-    position:absolute;
-    inset:0;
-    width:140%;
-    height:100%;
-    opacity:0.32;
-    z-index:0;
+    position:absolute; inset:0; width:140%; height:100%;
+    opacity:0.32; z-index:0;
     animation: drift 22s ease-in-out infinite alternate;
   }
 
-  .card-countdown .eyebrow{
-    position:relative;
-    z-index:1;
-  }
-
+  .card-countdown .eyebrow{ position:relative; z-index:1; }
   .card-countdown .countdown-sub,
-  .card-countdown .countdown-unit{
-    text-shadow: 0 1px 6px rgba(0,0,0,0.55);
-  }
+  .card-countdown .countdown-unit{ text-shadow: 0 1px 6px rgba(0,0,0,0.55); }
 
-  @keyframes drift{
-    from{ transform:translateX(-6%); }
-    to{ transform:translateX(2%); }
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    .aurora-wave{ animation:none; }
-  }
+  @keyframes drift{ from{transform:translateX(-6%)} to{transform:translateX(2%)} }
+  @media(prefers-reduced-motion:reduce){ .aurora-wave{animation:none} }
 
   .countdown-body{
-    position:relative;
-    z-index:1;
-    display:flex;
-    align-items:baseline;
-    gap:14px;
-    flex-wrap:wrap;
+    position:relative; z-index:1;
+    display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
   }
 
   .countdown-number{
@@ -154,343 +129,116 @@
     font-size:clamp(2.2rem, 4.8vw, 3.8rem);
     line-height:1;
     background:linear-gradient(100deg, var(--green), var(--cyan) 55%, var(--violet));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
 
-  .countdown-unit{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.95rem;
-    color:var(--text-dim);
-  }
+  .countdown-unit{ font-family:'JetBrains Mono', monospace; font-size:0.95rem; color:var(--text-dim); }
+  .countdown-sub{ position:relative; z-index:1; margin:2px 0 0 0; color:var(--text-dim); font-size:0.85rem; }
 
-  .countdown-sub{
-    position:relative;
-    z-index:1;
-    margin:2px 0 0 0;
-    color:var(--text-dim);
-    font-size:0.85rem;
-  }
-
-  /* ---------- WEATHER ---------- */
-  .card-weather{
-    grid-area: weather;
-    background:var(--bg-elev-2);
-    overflow:hidden;
-    gap:8px;
-  }
-
-  .weather-now{
-    display:flex;
-    align-items:center;
-    gap:12px;
-  }
-
-  .weather-hours{
-    display:flex;
-    gap:10px;
-    margin-left:auto;
-  }
-
+  /* WEATHER */
+  .card-weather{ grid-area:weather; background:var(--bg-elev-2); overflow:hidden; gap:6px; }
+  .weather-now{ display:flex; align-items:center; gap:12px; }
+  .weather-hours{ display:flex; gap:10px; margin-left:auto; }
   .weather-hour{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:5px;
-    font-size:0.74rem;
-    color:var(--text-dim);
-    background:rgba(34,211,238,0.06);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:6px 10px;
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+    font-size:0.74rem; color:var(--text-dim);
+    background:rgba(34,211,238,0.06); border:1px solid var(--border);
+    border-radius:8px; padding:6px 10px;
   }
-
-  .weather-hour .h-time{
-    font-family:'JetBrains Mono', monospace;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    font-size:0.66rem;
-  }
-
-  .weather-hour .h-icon-temp{
-    display:flex;
-    align-items:center;
-    gap:5px;
-  }
-
-  .weather-hour svg{
-    width:18px;
-    height:18px;
-    color:var(--cyan);
-  }
-
-  .weather-hour .h-temp{
-    color:var(--text);
-    font-size:0.92rem;
-    font-weight:600;
-  }
-
-  .weather-icon{
-    flex:none;
-    width:34px;
-    height:34px;
-    color:var(--cyan);
-  }
-
+  .weather-hour .h-time{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; font-size:0.66rem; }
+  .weather-hour .h-icon-temp{ display:flex; align-items:center; gap:5px; }
+  .weather-hour svg{ width:18px; height:18px; color:var(--cyan); }
+  .weather-hour .h-temp{ color:var(--text); font-size:0.92rem; font-weight:600; }
+  .weather-icon{ flex:none; width:34px; height:34px; color:var(--cyan); }
   .weather-temp{
-    font-family:'Space Grotesk', sans-serif;
-    font-weight:700;
-    font-size:1.9rem;
-    line-height:1;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:1.9rem; line-height:1;
     background:linear-gradient(100deg, var(--green), var(--cyan));
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-
-  .weather-desc{
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-  }
-
-  .weather-desc .cond{
-    font-size:0.85rem;
-    color:var(--text);
-  }
-
-  .weather-desc .meta{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.72rem;
-    color:var(--text-dim);
-  }
-
-  .weather-sun{
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem;
-    color:var(--text-dim);
-    margin:0;
-    padding-top:2px;
-  }
-
+  .weather-desc{ display:flex; flex-direction:column; gap:2px; }
+  .weather-desc .cond{ font-size:0.85rem; color:var(--text); }
+  .weather-sun{ font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--text-dim); margin:0; padding-top:2px; }
   .weather-days{
-    display:flex;
-    justify-content:space-between;
-    gap:6px;
-    margin-top:10px;
-    padding-top:10px;
-    border-top:1px solid var(--border);
+    display:flex; justify-content:space-between; gap:6px;
+    margin-top:6px; padding-top:6px; border-top:1px solid var(--border);
   }
-
-  .weather-day{
-    flex:1;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
-    font-size:0.68rem;
-    color:var(--text-dim);
-  }
-
-  .weather-day .d-name{
-    font-family:'JetBrains Mono', monospace;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-  }
-
-  .weather-day svg{
-    width:18px;
-    height:18px;
-    color:var(--cyan);
-  }
-
-  .weather-day .d-temps{
-    color:var(--text);
-    font-size:0.72rem;
-    white-space:nowrap;
-  }
-
+  .weather-day{ flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:0.68rem; color:var(--text-dim); }
+  .weather-day .d-name{ font-family:'JetBrains Mono',monospace; text-transform:uppercase; letter-spacing:0.05em; }
+  .weather-day svg{ width:18px; height:18px; color:var(--cyan); }
+  .weather-day .d-temps{ color:var(--text); font-size:0.72rem; white-space:nowrap; }
   .weather-day .d-temps .lo{ color:var(--text-dim); }
+  .weather-status{ color:var(--text-dim); font-size:0.8rem; }
 
-  .weather-status{
-    color:var(--text-dim);
-    font-size:0.8rem;
-  }
-
-  /* ---------- FOODS ---------- */
-  .card-foods{ grid-area: foods; }
+  /* FOODS */
+  .card-foods{ grid-area:foods; }
   .food-list{
-    list-style:none;
-    margin:0;
-    padding:0;
-    flex:1;
-    display:grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(9, 1fr);
-    align-content:stretch;
-    overflow:hidden;
-    min-width:0;
+    list-style:none; margin:0; padding:0; flex:1;
+    display:grid; grid-template-columns:1fr; grid-template-rows:repeat(9,1fr);
+    align-content:stretch; overflow:hidden; min-width:0;
   }
-  .food-list li{
-    font-size:0.86rem;
-    display:flex;
-    align-items:center;
-    gap:9px;
-    min-width:0;
-    border-bottom:1px solid var(--border);
-  }
-  .food-list li:last-child{
-    border-bottom:none;
-  }
-  .food-list li span{
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-    min-width:0;
-    font-size:0.86rem;
-  }
-  .food-list li::before{
-    content:"";
-    width:5px; height:5px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--green), var(--cyan));
-    flex:none;
-  }
+  .food-list li{ font-size:0.86rem; display:flex; align-items:center; gap:9px; min-width:0; border-bottom:1px solid var(--border); }
+  .food-list li:last-child{ border-bottom:none; }
+  .food-list li span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; font-size:0.86rem; }
+  .food-list li::before{ content:""; width:5px; height:5px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--cyan)); flex:none; }
 
-  /* ---------- MAP ---------- */
-  .card-map{
-    grid-area: map;
-    padding-bottom:14px;
-  }
-
-  .map-header{
-    display:flex;
-    align-items:baseline;
-    justify-content:space-between;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-
-  .map-hint{
-    font-size:0.72rem;
-    color:var(--text-dim);
-  }
-
-  #pin-map{
-    flex:1;
-    min-height:0;
-    width:100%;
-    border-radius:8px;
-    overflow:hidden;
-    border:1px solid var(--border);
-  }
-
-  /* Leaflet theming to match the dashboard */
-  .leaflet-container{
-    background:#0a1322;
-    font-family:'Inter', system-ui, sans-serif;
-  }
-  .leaflet-popup-content-wrapper{
-    background:var(--bg-elev);
-    color:var(--text);
-    border:1px solid var(--border);
-    border-radius:8px;
-    box-shadow:none;
-  }
-  .leaflet-popup-tip{
-    background:var(--bg-elev);
-    border:1px solid var(--border);
-  }
-  .leaflet-popup-content{
-    margin:10px 12px;
-    font-size:0.82rem;
-    line-height:1.4;
-  }
-  .pin-popup-label{
-    display:block;
-    font-weight:600;
-    margin-bottom:6px;
-    font-family:'Space Grotesk', sans-serif;
-  }
-  .pin-popup-del{
-    background:none;
-    border:1px solid var(--border);
-    color:var(--text-dim);
-    font-family:'JetBrains Mono', monospace;
-    font-size:0.68rem;
-    letter-spacing:0.05em;
-    text-transform:uppercase;
-    padding:3px 8px;
-    border-radius:5px;
-    cursor:pointer;
-  }
+  /* MAP */
+  .card-map{ grid-area:map; padding-bottom:14px; }
+  .map-header{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+  .map-hint{ font-size:0.72rem; color:var(--text-dim); }
+  #pin-map{ flex:1; min-height:0; width:100%; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .leaflet-container{ background:#0a1322; font-family:'Inter',system-ui,sans-serif; }
+  .leaflet-popup-content-wrapper{ background:var(--bg-elev); color:var(--text); border:1px solid var(--border); border-radius:8px; box-shadow:none; }
+  .leaflet-popup-tip{ background:var(--bg-elev); border:1px solid var(--border); }
+  .leaflet-popup-content{ margin:10px 12px; font-size:0.82rem; line-height:1.4; }
+  .pin-popup-label{ display:block; font-weight:600; margin-bottom:6px; font-family:'Space Grotesk',sans-serif; }
+  .pin-popup-del{ background:none; border:1px solid var(--border); color:var(--text-dim); font-family:'JetBrains Mono',monospace; font-size:0.68rem; letter-spacing:0.05em; text-transform:uppercase; padding:3px 8px; border-radius:5px; cursor:pointer; }
   .pin-popup-del:hover{ color:#f87171; border-color:#f87171; }
-  .leaflet-control-attribution{
-    background:rgba(6,10,20,0.7) !important;
-    color:var(--text-dim) !important;
-  }
-  .leaflet-control-attribution a{ color:var(--text-dim) !important; }
-  .leaflet-control-zoom a{
-    background:var(--bg-elev) !important;
-    color:var(--text) !important;
-    border-color:var(--border) !important;
-  }
-  .leaflet-control-zoom a:hover{ color:var(--cyan) !important; }
+  .leaflet-control-attribution{ background:rgba(6,10,20,0.7)!important; color:var(--text-dim)!important; }
+  .leaflet-control-attribution a{ color:var(--text-dim)!important; }
+  .leaflet-control-zoom a{ background:var(--bg-elev)!important; color:var(--text)!important; border-color:var(--border)!important; }
+  .leaflet-control-zoom a:hover{ color:var(--cyan)!important; }
+  .pin-dot{ width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--cyan)); border:2px solid #0a1322; box-shadow:0 0 0 3px rgba(34,211,238,0.25); }
 
-  .pin-dot{
-    width:14px;
-    height:14px;
-    border-radius:50%;
-    background:linear-gradient(135deg, var(--green), var(--cyan));
-    border:2px solid #0a1322;
-    box-shadow:0 0 0 3px rgba(34,211,238,0.25);
-  }
+  /* PLAYLIST */
+  .card-playlist{ grid-area:playlist; padding:16px 16px 12px 16px; }
+  .playlist-frame{ flex:1; min-height:0; width:100%; border-radius:10px; overflow:hidden; border:1px solid rgba(52,211,153,0.18); background:#121212; box-shadow:0 0 0 1px rgba(34,211,238,0.06); }
+  .card-playlist iframe{ display:block; width:100%; height:100%; border:none; }
 
-  /* ---------- PLAYLIST ---------- */
-  .card-playlist{
-    grid-area: playlist;
-    padding:16px 16px 12px 16px;
+  /* TRAVEL — single horizontal row of 4 legs */
+  .card-travel{ grid-area:travel; padding:10px 16px; gap:0; }
+  .travel-legs{
+    flex:1; min-height:0;
+    display:grid;
+    grid-template-columns: 1fr 1px 1fr 1px 1fr 1px 1fr;
+    align-items:center;
   }
-  .playlist-frame{
-    flex:1;
-    min-height:0;
-    width:100%;
-    border-radius:10px;
-    overflow:hidden;
-    border:1px solid rgba(52,211,153,0.18);
-    background:#121212;
-    box-shadow:0 0 0 1px rgba(34,211,238,0.06);
-  }
-  .card-playlist iframe{
-    display:block;
-    width:100%;
-    height:100%;
-    border:none;
-  }
+  .travel-divider{ background:var(--border); align-self:stretch; margin:4px 0; }
+  .travel-segment{ display:flex; align-items:center; gap:9px; padding:0 14px; min-width:0; }
+  .seg-icon{ width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-size:0.8rem; }
+  .seg-icon.plane{ background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.3); }
+  .seg-icon.bus{ background:rgba(34,211,238,0.12); border:1px solid rgba(34,211,238,0.25); }
+  .seg-icon.train{ background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.25); }
+  .seg-body{ display:flex; flex-direction:column; gap:1px; min-width:0; flex:1; }
+  .seg-route{ font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .seg-times{ font-family:'JetBrains Mono',monospace; font-size:0.66rem; color:var(--text-dim); display:flex; align-items:center; gap:4px; }
+  .seg-times .t-depart{ color:var(--text); }
+  .seg-times .t-arrow{ opacity:0.4; }
+  .seg-times .t-arrive{ color:var(--text-dim); }
+  .seg-times .t-date{ font-size:0.58rem; background:rgba(148,163,184,0.08); border:1px solid var(--border); border-radius:4px; padding:1px 5px; color:var(--text-dim); white-space:nowrap; }
 
-  /* ---------- Responsive: stack on small screens ---------- */
-  @media (max-width: 880px){
-    html, body{ overflow:auto; }
-    .dash{
-      height:auto;
-      grid-template-columns: 1fr;
-      grid-template-rows: auto;
-      grid-template-areas:
-        "countdown"
-        "weather"
-        "foods"
-        "map"
-        "playlist";
-    }
+  @media(max-width:880px){
+    html,body{ overflow:auto; }
+    .dash{ height:auto; grid-template-columns:1fr; grid-template-rows:auto;
+      grid-template-areas:"countdown" "weather" "foods" "map" "travel" "playlist"; }
     .card{ min-height:140px; }
     .card-map{ min-height:320px; }
     .card-playlist .playlist-frame{ min-height:380px; }
+    .travel-legs{ grid-template-columns:1fr; }
+    .travel-divider{ height:1px; width:auto; }
   }
 </style>
 </head>
 <body>
-
 <div class="dash">
 
   <div class="card card-countdown">
@@ -500,7 +248,7 @@
       <span class="countdown-unit">days until Jyväskylä</span>
     </div>
     <p class="countdown-sub">Jul 8 → Jul 15 · Almost here.</p>
-    <p class="countdown-sub" id="jkl-clock" style="position:relative; z-index:1;">Jyväskylä time: —</p>
+    <p class="countdown-sub" id="jkl-clock" style="position:relative;z-index:1;">Jyväskylä time: —</p>
     <svg class="aurora-wave" viewBox="0 0 600 200" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="auroraGrad" x1="0" y1="0" x2="1" y2="0">
@@ -519,12 +267,8 @@
     <p class="weather-status" id="weather-status">Loading forecast…</p>
     <div class="weather-now" id="weather-now" style="display:none;">
       <svg class="weather-icon" id="weather-now-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"></svg>
-      <div>
-        <span class="weather-temp" id="weather-temp">—°</span>
-      </div>
-      <div class="weather-desc">
-        <span class="cond" id="weather-cond">—</span>
-      </div>
+      <div><span class="weather-temp" id="weather-temp">—°</span></div>
+      <div class="weather-desc"><span class="cond" id="weather-cond">—</span></div>
       <div class="weather-hours" id="weather-hours"></div>
     </div>
     <p class="weather-sun" id="weather-sun"></p>
@@ -554,312 +298,219 @@
     <div id="pin-map"></div>
   </div>
 
+  <div class="card card-travel">
+    <p class="eyebrow">Travel · Trondheim ↔ Jyväskylä</p>
+    <div class="travel-legs">
+
+      <div class="travel-segment">
+        <div class="seg-icon plane">✈</div>
+        <div class="seg-body">
+          <span class="seg-route">Trondheim → Helsinki</span>
+          <span class="seg-times">
+            <span class="t-depart">19:05</span>
+            <span class="t-arrow">→</span>
+            <span class="t-arrive">21:10</span>
+            <span class="t-date">Jul 8</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="travel-divider"></div>
+
+      <div class="travel-segment">
+        <div class="seg-icon bus">🚌</div>
+        <div class="seg-body">
+          <span class="seg-route">Helsinki → Jyväskylä</span>
+          <span class="seg-times">
+            <span class="t-depart">23:55</span>
+            <span class="t-arrow">→</span>
+            <span class="t-arrive">03:15</span>
+            <span class="t-date">Jul 8→9</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="travel-divider"></div>
+
+      <div class="travel-segment">
+        <div class="seg-icon train">🚆</div>
+        <div class="seg-body">
+          <span class="seg-route">Jyväskylä → Helsinki</span>
+          <span class="seg-times">
+            <span class="t-depart">09:19</span>
+            <span class="t-arrow">→</span>
+            <span class="t-arrive">13:13</span>
+            <span class="t-date">Jul 15</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="travel-divider"></div>
+
+      <div class="travel-segment">
+        <div class="seg-icon plane">✈</div>
+        <div class="seg-body">
+          <span class="seg-route">Helsinki → Trondheim</span>
+          <span class="seg-times">
+            <span class="t-depart">16:30</span>
+            <span class="t-arrow">→</span>
+            <span class="t-arrive">18:35</span>
+            <span class="t-date">Jul 15</span>
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <div class="card card-playlist">
     <p class="eyebrow">Playlist</p>
     <div class="playlist-frame">
-      <iframe
-          src="https://open.spotify.com/embed/playlist/0oxgwY57CPWPMooMvXDigd?utm_source=generator&theme=0"
-          frameborder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-      </iframe>
+      <iframe src="https://open.spotify.com/embed/playlist/0oxgwY57CPWPMooMvXDigd?utm_source=generator&theme=0"
+        frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
     </div>
   </div>
 
 </div>
-
 <script>
-  function updateCountdown() {
-    const arrival = new Date("July 8, 2026");
-    const today = new Date();
-    arrival.setHours(0,0,0,0);
-    today.setHours(0,0,0,0);
-
-    const diff = arrival - today;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    const el = document.getElementById("countdown");
-    const sub = document.querySelector(".countdown-sub");
-
-    if (days > 0) {
-      el.textContent = days;
-    } else if (days === 0) {
-      el.textContent = "0";
-      sub.textContent = "Arrival day — welcome to Finland.";
-    } else {
-      el.textContent = "✓";
-      sub.textContent = "He's here!";
-    }
+  function updateCountdown(){
+    const arrival=new Date("July 8, 2026");
+    const today=new Date();
+    arrival.setHours(0,0,0,0); today.setHours(0,0,0,0);
+    const diff=arrival-today;
+    const days=Math.ceil(diff/(1000*60*60*24));
+    const el=document.getElementById("countdown");
+    const sub=document.querySelector(".countdown-sub");
+    if(days>0){el.textContent=days;}
+    else if(days===0){el.textContent="0";sub.textContent="Arrival day — welcome to Finland.";}
+    else{el.textContent="✓";sub.textContent="He's here!";}
   }
   updateCountdown();
 
-  // ---------- Live Jyväskylä clock ----------
   function updateClock(){
-    const el = document.getElementById('jkl-clock');
-    const now = new Date();
-    const formatted = new Intl.DateTimeFormat('en-GB', {
-      timeZone: 'Europe/Helsinki',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    }).format(now);
-    el.textContent = 'Jyväskylä time: ' + formatted;
+    const el=document.getElementById('jkl-clock');
+    const now=new Date();
+    const formatted=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Helsinki',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(now);
+    el.textContent='Jyväskylä time: '+formatted;
   }
-  updateClock();
-  setInterval(updateClock, 1000);
+  updateClock(); setInterval(updateClock,1000);
 
-  // ---------- Weather (Open-Meteo, no key required) ----------
-  const WX_ICONS = {
-    clear:  '<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>',
-    cloud:  '<path d="M7 18a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 18H7Z"/>',
-    fog:    '<path d="M5 8.5h11M3 12h14M5 15.5h11" /><circle cx="17.5" cy="9" r="2.6"/>',
-    rain:   '<path d="M7 14.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14.5H7Z"/><path d="M8 18.5l-1 2.2M12.5 18.5l-1 2.2M17 18.5l-1 2.2"/>',
-    snow:   '<path d="M7 14a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14H7Z"/><path d="M9 18.5v3M7.6 19.2l2.8 1.6M10.4 19.2l-2.8 1.6M15 18.5v3M13.6 19.2l2.8 1.6M16.4 19.2l-2.8 1.6"/>',
-    storm:  '<path d="M7 13.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 13.5H7Z"/><path d="M12.5 14.5l-2.5 4h2.5l-1.5 4 4.5-5.5h-2.5l2-2.5h-2.5z" fill="currentColor" stroke="none"/>'
+  const WX_ICONS={
+    clear:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/>',
+    cloud:'<path d="M7 18a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 18H7Z"/>',
+    fog:'<path d="M5 8.5h11M3 12h14M5 15.5h11"/><circle cx="17.5" cy="9" r="2.6"/>',
+    rain:'<path d="M7 14.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14.5H7Z"/><path d="M8 18.5l-1 2.2M12.5 18.5l-1 2.2M17 18.5l-1 2.2"/>',
+    snow:'<path d="M7 14a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 14H7Z"/><path d="M9 18.5v3M7.6 19.2l2.8 1.6M10.4 19.2l-2.8 1.6M15 18.5v3M13.6 19.2l2.8 1.6M16.4 19.2l-2.8 1.6"/>',
+    storm:'<path d="M7 13.5a4.2 4.2 0 0 1-.6-8.36 5.4 5.4 0 0 1 10.4-1.9A4.6 4.6 0 0 1 17.5 13.5H7Z"/><path d="M12.5 14.5l-2.5 4h2.5l-1.5 4 4.5-5.5h-2.5l2-2.5h-2.5z" fill="currentColor" stroke="none"/>'
   };
 
   function wxCategory(code){
-    if (code === 0 || code === 1) return 'clear';
-    if (code === 2 || code === 3) return 'cloud';
-    if (code === 45 || code === 48) return 'fog';
-    if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return 'rain';
-    if ([71,73,75,77,85,86].includes(code)) return 'snow';
-    if ([95,96,99].includes(code)) return 'storm';
-    return 'cloud';
+    if(code===0||code===1)return'clear';
+    if(code===2||code===3)return'cloud';
+    if(code===45||code===48)return'fog';
+    if([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code))return'rain';
+    if([71,73,75,77,85,86].includes(code))return'snow';
+    if([95,96,99].includes(code))return'storm';
+    return'cloud';
   }
 
   function wxLabel(code){
-    const labels = {
-      0:'Clear sky', 1:'Mostly clear', 2:'Partly cloudy', 3:'Overcast',
-      45:'Fog', 48:'Rime fog',
-      51:'Light drizzle', 53:'Drizzle', 55:'Dense drizzle',
-      56:'Freezing drizzle', 57:'Freezing drizzle',
-      61:'Light rain', 63:'Rain', 65:'Heavy rain',
-      66:'Freezing rain', 67:'Freezing rain',
-      71:'Light snow', 73:'Snow', 75:'Heavy snow', 77:'Snow grains',
-      80:'Rain showers', 81:'Rain showers', 82:'Violent showers',
-      85:'Snow showers', 86:'Snow showers',
-      95:'Thunderstorm', 96:'Thunderstorm + hail', 99:'Thunderstorm + hail'
-    };
-    return labels[code] || 'Unsettled';
+    const l={0:'Clear sky',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',48:'Rime fog',51:'Light drizzle',53:'Drizzle',55:'Dense drizzle',56:'Freezing drizzle',57:'Freezing drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',66:'Freezing rain',67:'Freezing rain',71:'Light snow',73:'Snow',75:'Heavy snow',77:'Snow grains',80:'Rain showers',81:'Rain showers',82:'Violent showers',85:'Snow showers',86:'Snow showers',95:'Thunderstorm',96:'Thunderstorm + hail',99:'Thunderstorm + hail'};
+    return l[code]||'Unsettled';
   }
 
-  function setIcon(svgEl, code){
-    svgEl.innerHTML = WX_ICONS[wxCategory(code)];
-  }
+  function setIcon(svgEl,code){svgEl.innerHTML=WX_ICONS[wxCategory(code)];}
 
   async function loadWeather(){
-    const statusEl = document.getElementById('weather-status');
+    const statusEl=document.getElementById('weather-status');
     try{
-      const url = 'https://api.open-meteo.com/v1/forecast'
-        + '?latitude=62.2393&longitude=25.7475'
-        + '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m'
-        + '&hourly=temperature_2m,weather_code'
-        + '&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset'
-        + '&timezone=Europe%2FHelsinki&forecast_days=6';
-
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('bad response');
-      const data = await res.json();
-
-      const cur = data.current;
-      document.getElementById('weather-temp').textContent = Math.round(cur.temperature_2m) + '°';
-      document.getElementById('weather-cond').textContent = wxLabel(cur.weather_code);
-      setIcon(document.getElementById('weather-now-icon'), cur.weather_code);
-
-      const sunrise = new Date(data.daily.sunrise[0]);
-      const sunset = new Date(data.daily.sunset[0]);
-      const fmt = (d) => d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Helsinki' });
-      document.getElementById('weather-sun').textContent =
-        '☀ ' + fmt(sunrise) + ' rise · ' + fmt(sunset) + ' set';
-
-      // Hourly strip: next 6 hours starting from the current hour
-      const hoursEl = document.getElementById('weather-hours');
-      hoursEl.innerHTML = '';
-      const nowHour = new Date();
-      nowHour.setMinutes(0,0,0);
-      let startIdx = data.hourly.time.findIndex(t => new Date(t).getTime() >= nowHour.getTime());
-      if (startIdx === -1) startIdx = 0;
-
-      for (let i = startIdx; i < startIdx + 3 && i < data.hourly.time.length; i++) {
-        const t = new Date(data.hourly.time[i]);
-        const hourLabel = t.toLocaleTimeString('en-GB', { hour: '2-digit', timeZone: 'Europe/Helsinki' }).replace(':00','') + 'h';
-        const temp = Math.round(data.hourly.temperature_2m[i]);
-        const code = data.hourly.weather_code[i];
-
-        const wrap = document.createElement('div');
-        wrap.className = 'weather-hour';
-        wrap.innerHTML =
-          '<span class="h-time">' + hourLabel + '</span>' +
-          '<span class="h-icon-temp">' +
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + WX_ICONS[wxCategory(code)] + '</svg>' +
-            '<span class="h-temp">' + temp + '°</span>' +
-          '</span>';
-        hoursEl.appendChild(wrap);
+      const url='https://api.open-meteo.com/v1/forecast?latitude=62.2393&longitude=25.7475&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&timezone=Europe%2FHelsinki&forecast_days=6';
+      const res=await fetch(url);
+      if(!res.ok)throw new Error('bad');
+      const data=await res.json();
+      const cur=data.current;
+      document.getElementById('weather-temp').textContent=Math.round(cur.temperature_2m)+'°';
+      document.getElementById('weather-cond').textContent=wxLabel(cur.weather_code);
+      setIcon(document.getElementById('weather-now-icon'),cur.weather_code);
+      const sunrise=new Date(data.daily.sunrise[0]);
+      const sunset=new Date(data.daily.sunset[0]);
+      const fmt=d=>d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Helsinki'});
+      document.getElementById('weather-sun').textContent='☀ '+fmt(sunrise)+' rise · '+fmt(sunset)+' set';
+      const hoursEl=document.getElementById('weather-hours');
+      hoursEl.innerHTML='';
+      const nowHour=new Date(); nowHour.setMinutes(0,0,0);
+      let si=data.hourly.time.findIndex(t=>new Date(t).getTime()>=nowHour.getTime());
+      if(si===-1)si=0;
+      for(let i=si;i<si+3&&i<data.hourly.time.length;i++){
+        const t=new Date(data.hourly.time[i]);
+        const hl=t.toLocaleTimeString('en-GB',{hour:'2-digit',timeZone:'Europe/Helsinki'}).replace(':00','')+'h';
+        const temp=Math.round(data.hourly.temperature_2m[i]);
+        const code=data.hourly.weather_code[i];
+        const w=document.createElement('div'); w.className='weather-hour';
+        w.innerHTML='<span class="h-time">'+hl+'</span><span class="h-icon-temp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+WX_ICONS[wxCategory(code)]+'</svg><span class="h-temp">'+temp+'°</span></span>';
+        hoursEl.appendChild(w);
       }
-
-      statusEl.style.display = 'none';
-      document.getElementById('weather-now').style.display = 'flex';
-
-      const daysEl = document.getElementById('weather-days');
-      daysEl.innerHTML = '';
-      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-      data.daily.time.forEach((dateStr, i) => {
-        if (i === 0) return; // skip today, already shown above
-        if (i > 5) return;
-        const date = new Date(dateStr);
-        const name = dayNames[date.getDay()];
-        const hi = Math.round(data.daily.temperature_2m_max[i]);
-        const lo = Math.round(data.daily.temperature_2m_min[i]);
-        const code = data.daily.weather_code[i];
-
-        const wrap = document.createElement('div');
-        wrap.className = 'weather-day';
-        wrap.innerHTML =
-          '<span class="d-name">' + name + '</span>' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">' + WX_ICONS[wxCategory(code)] + '</svg>' +
-          '<span class="d-temps">' + hi + '° <span class="lo">' + lo + '°</span></span>';
-        daysEl.appendChild(wrap);
+      statusEl.style.display='none';
+      document.getElementById('weather-now').style.display='flex';
+      const daysEl=document.getElementById('weather-days'); daysEl.innerHTML='';
+      const dn=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      data.daily.time.forEach((ds,i)=>{
+        if(i===0||i>5)return;
+        const date=new Date(ds);
+        const hi=Math.round(data.daily.temperature_2m_max[i]);
+        const lo=Math.round(data.daily.temperature_2m_min[i]);
+        const code=data.daily.weather_code[i];
+        const w=document.createElement('div'); w.className='weather-day';
+        w.innerHTML='<span class="d-name">'+dn[date.getDay()]+'</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">'+WX_ICONS[wxCategory(code)]+'</svg><span class="d-temps">'+hi+'° <span class="lo">'+lo+'°</span></span>';
+        daysEl.appendChild(w);
       });
-
-    }catch(err){
-      statusEl.textContent = "Couldn't load forecast.";
-    }
+    }catch(e){statusEl.textContent="Couldn't load forecast.";}
   }
-
   loadWeather();
 
-  // ---------- Map with custom pins (Leaflet + OpenStreetMap, shared via Firebase) ----------
-
-  // Your Firebase project config
-  const firebaseConfig = {
-    apiKey: "AIzaSyA0xdtrCJkOHOdI37w5lurWyNmBnFtrNyc",
-    authDomain: "rasendemus-e5b73.firebaseapp.com",
-    databaseURL: "https://rasendemus-e5b73-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "rasendemus-e5b73",
-    storageBucket: "rasendemus-e5b73.firebasestorage.app",
-    messagingSenderId: "492937064643",
-    appId: "1:492937064643:web:432fdbd6a7f2cdde2b3276"
-  };
-
+  const firebaseConfig={apiKey:"AIzaSyA0xdtrCJkOHOdI37w5lurWyNmBnFtrNyc",authDomain:"rasendemus-e5b73.firebaseapp.com",databaseURL:"https://rasendemus-e5b73-default-rtdb.europe-west1.firebasedatabase.app",projectId:"rasendemus-e5b73",storageBucket:"rasendemus-e5b73.firebasestorage.app",messagingSenderId:"492937064643",appId:"1:492937064643:web:432fdbd6a7f2cdde2b3276"};
   firebase.initializeApp(firebaseConfig);
-  const pinsRef = firebase.database().ref('pins');
-
-  const DEFAULT_PINS = {
-    d1: { lat: 62.2412, lng: 25.7480, label: 'Grocery store' },
-    d2: { lat: 62.2350, lng: 25.7390, label: 'Walking spot' },
-    d3: { lat: 62.2440, lng: 25.7510, label: 'Bus stop' }
-  };
-
-  const markersById = {};
-  let seededDefaults = false;
-
-  const map = L.map('pin-map', { zoomControl: true }).setView([62.2393, 25.7475], 13);
-
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 19
-  }).addTo(map);
-
-  const pinIcon = L.divIcon({
-    className: '',
-    html: '<div class="pin-dot"></div>',
-    iconSize: [14, 14],
-    iconAnchor: [7, 7],
-    popupAnchor: [0, -8]
-  });
-
-  function escapeHTML(str){
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  const pinsRef=firebase.database().ref('pins');
+  const DEFAULT_PINS={d1:{lat:62.2412,lng:25.7480,label:'Grocery store'},d2:{lat:62.2350,lng:25.7390,label:'Walking spot'},d3:{lat:62.2440,lng:25.7510,label:'Bus stop'}};
+  const markersById={};
+  let seededDefaults=false;
+  const map=L.map('pin-map',{zoomControl:true}).setView([62.2393,25.7475],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(map);
+  const pinIcon=L.divIcon({className:'',html:'<div class="pin-dot"></div>',iconSize:[14,14],iconAnchor:[7,7],popupAnchor:[0,-8]});
+  function escapeHTML(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function popupHTML(id,label){return'<span class="pin-popup-label">'+escapeHTML(label)+'</span><button class="pin-popup-del" onclick="window.removePin(\''+id+'\')">Remove pin</button>';}
+  function addMarker(id,pin){
+    const m=L.marker([pin.lat,pin.lng],{icon:pinIcon,draggable:true}).addTo(map);
+    m.bindPopup(popupHTML(id,pin.label));
+    m.on('dragend',()=>{const p=m.getLatLng();pinsRef.child(id).update({lat:p.lat,lng:p.lng});});
+    markersById[id]=m;
   }
-
-  function popupHTML(id, label){
-    return '<span class="pin-popup-label">' + escapeHTML(label) + '</span>' +
-      '<button class="pin-popup-del" onclick="window.removePin(\'' + id + '\')">Remove pin</button>';
-  }
-
-  function addMarker(id, pin){
-    const marker = L.marker([pin.lat, pin.lng], { icon: pinIcon, draggable: true }).addTo(map);
-    marker.bindPopup(popupHTML(id, pin.label));
-    marker.on('dragend', () => {
-      const pos = marker.getLatLng();
-      pinsRef.child(id).update({ lat: pos.lat, lng: pos.lng });
-    });
-    markersById[id] = marker;
-  }
-
-  function removeMarker(id){
-    const marker = markersById[id];
-    if (marker) map.removeLayer(marker);
-    delete markersById[id];
-  }
-
-  window.removePin = function(id){
-    pinsRef.child(id).remove();
-  };
-
-  let firstLoad = true;
+  function removeMarker(id){const m=markersById[id];if(m)map.removeLayer(m);delete markersById[id];}
+  window.removePin=id=>pinsRef.child(id).remove();
+  let firstLoad=true;
   function fitToCurrentPins(){
-    const ids = Object.keys(markersById);
-    if (ids.length === 0) return;
-    const bounds = L.latLngBounds(ids.map(id => markersById[id].getLatLng()));
-    map.fitBounds(bounds, { padding: [36, 36], maxZoom: 15 });
+    const ids=Object.keys(markersById); if(!ids.length)return;
+    map.fitBounds(L.latLngBounds(ids.map(id=>markersById[id].getLatLng())),{padding:[36,36],maxZoom:15});
   }
-
-  const mapHint = document.getElementById('map-hint');
-
-  // Live sync: reflect every change from Firebase straight into the map for everyone viewing it
-  pinsRef.on('value', (snapshot) => {
-    const data = snapshot.val();
-
-    // Seed default pins once, only if the database is empty (first ever run)
-    if (data === null && !seededDefaults) {
-      seededDefaults = true;
-      pinsRef.set(DEFAULT_PINS);
-      return; // the .set above will retrigger this listener with the seeded data
-    }
-
-    const incomingIds = new Set(Object.keys(data || {}));
-
-    // Remove markers that no longer exist
-    Object.keys(markersById).forEach(id => {
-      if (!incomingIds.has(id)) removeMarker(id);
+  const mapHint=document.getElementById('map-hint');
+  pinsRef.on('value',snap=>{
+    const data=snap.val();
+    if(data===null&&!seededDefaults){seededDefaults=true;pinsRef.set(DEFAULT_PINS);return;}
+    const inc=new Set(Object.keys(data||{}));
+    Object.keys(markersById).forEach(id=>{if(!inc.has(id))removeMarker(id);});
+    inc.forEach(id=>{
+      const pin=data[id];
+      if(markersById[id]){markersById[id].setLatLng([pin.lat,pin.lng]);markersById[id].setPopupContent(popupHTML(id,pin.label));}
+      else addMarker(id,pin);
     });
-
-    // Add or update markers
-    incomingIds.forEach(id => {
-      const pin = data[id];
-      if (markersById[id]) {
-        markersById[id].setLatLng([pin.lat, pin.lng]);
-        markersById[id].setPopupContent(popupHTML(id, pin.label));
-      } else {
-        addMarker(id, pin);
-      }
-    });
-
-    if (firstLoad) {
-      firstLoad = false;
-      setTimeout(() => { map.invalidateSize(); fitToCurrentPins(); }, 200);
-    }
-  }, (err) => {
-    console.error('Firebase read failed:', err);
-    mapHint.textContent = "Couldn't connect to shared map — check Firebase database rules.";
+    if(firstLoad){firstLoad=false;setTimeout(()=>{map.invalidateSize();fitToCurrentPins();},200);}
+  },err=>{console.error(err);mapHint.textContent="Couldn't connect to shared map.";});
+  map.on('click',e=>{
+    const label=window.prompt('Label this pin:','');
+    if(!label||!label.trim())return;
+    pinsRef.push().set({lat:e.latlng.lat,lng:e.latlng.lng,label:label.trim()});
   });
-
-  map.on('click', (e) => {
-    const label = window.prompt('Label this pin:', '');
-    if (label === null || label.trim() === '') return;
-    const newRef = pinsRef.push();
-    newRef.set({
-      lat: e.latlng.lat,
-      lng: e.latlng.lng,
-      label: label.trim()
-    });
-  });
-
-  window.addEventListener('resize', () => { map.invalidateSize(); });
+  window.addEventListener('resize',()=>map.invalidateSize());
 </script>
-
 </body>
 </html>
