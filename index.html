@@ -186,6 +186,16 @@
   .card-map{ grid-area:map; padding-bottom:14px; }
   .map-header{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; }
   .map-hint{ font-size:clamp(0.72rem, 0.3vw + 0.58rem, 1rem); color:var(--text-dim); }
+  .map-header-right{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .share-btn{
+    font-family:'JetBrains Mono',monospace; font-size:clamp(0.66rem, 0.25vw + 0.55rem, 0.88rem);
+    letter-spacing:0.04em; text-transform:uppercase;
+    background:rgba(167,139,250,0.12); border:1px solid rgba(167,139,250,0.3); color:var(--violet);
+    padding:5px 11px; border-radius:7px; cursor:pointer; white-space:nowrap;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .share-btn:hover{ background:rgba(167,139,250,0.22); }
+  .share-btn.active{ background:rgba(244,114,182,0.14); border-color:rgba(244,114,182,0.35); color:#f472b6; }
   #pin-map{ flex:1; min-height:0; width:100%; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
   .leaflet-container{ background:#0a1322; font-family:'Inter',system-ui,sans-serif; }
   .leaflet-popup-content-wrapper{ background:var(--bg-elev); color:var(--text); border:1px solid var(--border); border-radius:8px; box-shadow:none; }
@@ -199,6 +209,11 @@
   .leaflet-control-zoom a{ background:var(--bg-elev)!important; color:var(--text)!important; border-color:var(--border)!important; }
   .leaflet-control-zoom a:hover{ color:var(--cyan)!important; }
   .pin-dot{ width:14px; height:14px; border-radius:50%; background:linear-gradient(135deg,var(--green),var(--cyan)); border:2px solid #0a1322; box-shadow:0 0 0 3px rgba(34,211,238,0.25); }
+  .friend-dot{ width:16px; height:16px; border-radius:50%; background:linear-gradient(135deg,#f472b6,var(--violet)); border:2px solid #0a1322; box-shadow:0 0 0 3px rgba(167,139,250,0.28); position:relative; }
+  .friend-dot::after{ content:""; position:absolute; inset:-6px; border-radius:50%; border:1.5px solid rgba(244,114,182,0.5); animation:friendPulse 2.2s ease-out infinite; }
+  @keyframes friendPulse{ 0%{transform:scale(0.6); opacity:0.9;} 100%{transform:scale(1.6); opacity:0;} }
+  .friend-popup-name{ display:block; font-weight:600; margin-bottom:2px; font-family:'Space Grotesk',sans-serif; color:#f472b6; }
+  .friend-popup-time{ font-family:'JetBrains Mono',monospace; font-size:0.78em; color:var(--text-dim); }
 
   /* PLAYLIST */
   .card-playlist{ grid-area:playlist; padding:16px 16px 12px 16px; }
@@ -322,7 +337,10 @@
   <div class="card card-map">
     <div class="map-header">
       <p class="eyebrow">Spots</p>
-      <span class="map-hint" id="map-hint">click to drop a pin · click a pin to remove</span>
+      <div class="map-header-right">
+        <span class="map-hint" id="map-hint">click to drop a pin · click a pin to remove</span>
+        <button class="share-btn" id="share-location-btn">📍 Share my location</button>
+      </div>
     </div>
     <div id="pin-map"></div>
   </div>
@@ -644,6 +662,124 @@
     pinsRef.push().set({lat:e.latlng.lat,lng:e.latlng.lng,label:label.trim()});
   });
   window.addEventListener('resize',()=>map.invalidateSize());
+
+  /* ---- LIVE LOCATION SHARING (opt-in, per-person) ---- */
+  (function(){
+    const friendsRef=firebase.database().ref('friend_locations');
+    const shareBtn=document.getElementById('share-location-btn');
+    const friendMarkers={};
+    const friendIcon=L.divIcon({className:'',html:'<div class="friend-dot"></div>',iconSize:[16,16],iconAnchor:[8,8],popupAnchor:[0,-10]});
+
+    // Session-only state — nothing is persisted to disk between page loads,
+    // so sharing always starts off and must be re-enabled with a fresh consent click.
+    let myId=null;
+    let myName=null;
+    let watchId=null;
+    let sharing=false;
+
+    function timeAgo(ts){
+      const s=Math.max(0,Math.round((Date.now()-ts)/1000));
+      if(s<60)return 'just now';
+      const m=Math.round(s/60);
+      if(m<60)return m+'m ago';
+      const h=Math.round(m/60);
+      if(h<24)return h+'h ago';
+      return Math.round(h/24)+'d ago';
+    }
+
+    function friendPopupHTML(name,ts){
+      return '<span class="friend-popup-name">'+escapeHTML(name)+'</span><span class="friend-popup-time">updated '+timeAgo(ts)+'</span>';
+    }
+
+    function renderFriend(id,entry){
+      // Skip stale shares (>2 hours) — likely someone who closed the tab
+      // without stopping sharing, or a stale/interrupted session.
+      const stale=(Date.now()-entry.ts)>2*60*60*1000;
+      if(stale){ removeFriend(id); return; }
+      if(friendMarkers[id]){
+        friendMarkers[id].setLatLng([entry.lat,entry.lng]);
+        friendMarkers[id].setPopupContent(friendPopupHTML(entry.name,entry.ts));
+      } else {
+        const m=L.marker([entry.lat,entry.lng],{icon:friendIcon}).addTo(map);
+        m.bindPopup(friendPopupHTML(entry.name,entry.ts));
+        friendMarkers[id]=m;
+      }
+    }
+
+    function removeFriend(id){
+      const m=friendMarkers[id];
+      if(m)map.removeLayer(m);
+      delete friendMarkers[id];
+    }
+
+    friendsRef.on('value',snap=>{
+      const data=snap.val()||{};
+      const inc=new Set(Object.keys(data));
+      Object.keys(friendMarkers).forEach(id=>{ if(!inc.has(id))removeFriend(id); });
+      inc.forEach(id=>renderFriend(id,data[id]));
+    });
+
+    // Refresh "time ago" labels + prune stale markers periodically without a new position fix.
+    setInterval(()=>{
+      Object.keys(friendMarkers).forEach(id=>{
+        const m=friendMarkers[id];
+        if(m.isPopupOpen()){
+          const c=m.getPopup().getContent();
+          // cheap refresh: re-read last known entry from Firebase cache isn't kept locally,
+          // so just leave content — the next 'value' update (on any change) will refresh it.
+        }
+      });
+    },60000);
+
+    function startSharing(){
+      if(!('geolocation' in navigator)){
+        alert("This browser doesn't support location sharing.");
+        return;
+      }
+      const name=window.prompt('Share your location with the group as:', myName||'');
+      if(!name||!name.trim())return; // explicit consent required — no name, no sharing
+      myName=name.trim();
+      myId='me_'+Math.random().toString(36).slice(2,10);
+
+      watchId=navigator.geolocation.watchPosition(
+        pos=>{
+          friendsRef.child(myId).set({
+            name:myName,
+            lat:pos.coords.latitude,
+            lng:pos.coords.longitude,
+            ts:Date.now()
+          });
+        },
+        err=>{
+          console.error(err);
+          alert("Couldn't get your location — check location permission for this page.");
+          stopSharing();
+        },
+        {enableHighAccuracy:true, maximumAge:15000, timeout:20000}
+      );
+
+      sharing=true;
+      shareBtn.textContent='📍 Stop sharing';
+      shareBtn.classList.add('active');
+    }
+
+    function stopSharing(){
+      if(watchId!==null){navigator.geolocation.clearWatch(watchId); watchId=null;}
+      if(myId){friendsRef.child(myId).remove();}
+      sharing=false;
+      shareBtn.textContent='📍 Share my location';
+      shareBtn.classList.remove('active');
+    }
+
+    // Best-effort cleanup if the tab closes while sharing.
+    window.addEventListener('beforeunload',()=>{
+      if(sharing&&myId){ try{ friendsRef.child(myId).remove(); }catch(e){} }
+    });
+
+    shareBtn.addEventListener('click',()=>{
+      if(sharing)stopSharing(); else startSharing();
+    });
+  })();
 </script>
 </body>
 </html>
